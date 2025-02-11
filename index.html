@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jiad Motors Check-In</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #d40000;
+            color: white;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            color: black;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        button {
+            background-color: #d40000;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <h1>Jiad Motors Service Check-In</h1>
+    <div class="container">
+        <h2>Enter Your Details</h2>
+        <input type="text" id="name" placeholder="Full Name" required>
+        <input type="tel" id="phone" placeholder="Phone Number" required>
+        <button onclick="addToQueue()">Check-In</button>
+    </div>
+
+    <script>
+        function addToQueue() {
+            const name = document.getElementById("name").value;
+            const phone = document.getElementById("phone").value;
+            if (!name || !phone) {
+                alert("Please enter your name and phone number.");
+                return;
+            }
+
+            const queue = JSON.parse(localStorage.getItem("queue")) || [];
+            queue.push({ name, phone, time: new Date().toLocaleTimeString() });
+            localStorage.setItem("queue", JSON.stringify(queue));
+
+            // Dispatch an event to notify about the queue update
+            window.dispatchEvent(new Event('queueUpdated'));
+
+            alert("You have been added to the queue!");
+            document.getElementById("name").value = "";
+            document.getElementById("phone").value = "";
+        }
+    </script>
+</body>
+</html>

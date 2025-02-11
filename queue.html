@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue Display - Jiad Motors</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #d40000;
+            color: white;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            color: black;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: black;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Current Queue</h1>
+    <div class="container">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Time</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="queueTable"></tbody>
+        </table>
+        <button onclick="clearQueue()">Clear Queue</button>
+    </div>
+
+    <script>
+        function loadQueue() {
+            const queue = JSON.parse(localStorage.getItem("queue")) || [];
+            const queueTable = document.getElementById("queueTable");
+            queueTable.innerHTML = "";
+            queue.forEach((customer, index) => {
+                queueTable.innerHTML += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${customer.name}</td>
+                        <td>${customer.time}</td>
+                        <td><button onclick="removeFromQueue(${index})">Done</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function removeFromQueue(index) {
+            let queue = JSON.parse(localStorage.getItem("queue")) || [];
+            queue.splice(index, 1);
+            localStorage.setItem("queue", JSON.stringify(queue));
+            loadQueue();
+            // Dispatch an event to notify about the queue update
+            window.dispatchEvent(new Event('queueUpdated'));
+        }
+
+        function clearQueue() {
+            localStorage.removeItem("queue");
+            loadQueue();
+            // Dispatch an event to notify about the queue update
+            window.dispatchEvent(new Event('queueUpdated'));
+        }
+
+        // Listen for queue updates
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'queue') {
+                loadQueue();
+            }
+        });
+
+        // Also perform periodic checks every 30 seconds
+        setInterval(loadQueue, 30000);
+
+        // Initial load
+        loadQueue();
+    </script>
+</body>
+</html>
