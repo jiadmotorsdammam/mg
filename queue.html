@@ -79,31 +79,35 @@
         const db = getFirestore(app);
 
         async function loadQueue() {
+            console.log("Loading queue...");
             const queueTable = document.getElementById("queueTable");
             queueTable.innerHTML = "";
 
-            const querySnapshot = await getDocs(collection(db, "queue"));
-            let count = 1;
-            querySnapshot.forEach((doc) => {
-                const customer = doc.data();
-                queueTable.innerHTML += `
-                    <tr>
-                        <td>${count++}</td>
-                        <td>${customer.name}</td>
-                        <td>
-                            <button onclick="togglePhone('${doc.id}')">Show</button>
-                            <span id="phone-${doc.id}" class="hidden">${customer.phone}</span>
-                        </td>
-                        <td>${new Date(customer.time).toLocaleTimeString()}</td>
-                        <td><button onclick="removeFromQueue('${doc.id}')">Done</button></td>
-                    </tr>
-                `;
-            });
+            try {
+                const querySnapshot = await getDocs(collection(db, "queue"));
+                let count = 1;
+                querySnapshot.forEach((doc) => {
+                    const customer = doc.data();
+                    queueTable.innerHTML += `
+                        <tr>
+                            <td>${count++}</td>
+                            <td>${customer.name}</td>
+                            <td>
+                                <button onclick="togglePhone('${doc.id}')">Show</button>
+                                <span id="phone-${doc.id}" class="hidden">${customer.phone}</span>
+                            </td>
+                            <td>${new Date(customer.time).toLocaleTimeString()}</td>
+                            <td><button onclick="removeFromQueue('${doc.id}')">Done</button></td>
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                console.error("Error loading queue: ", error);
+            }
         }
 
         function togglePhone(id) {
-            const phoneSpan = document.getElementById(`phone-${id}`);
-            phoneSpan.classList.toggle("hidden");
+            document.getElementById(`phone-${id}`).classList.toggle("hidden");
         }
 
         async function removeFromQueue(id) {
