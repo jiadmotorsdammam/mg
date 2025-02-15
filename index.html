@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jiad Motors Check-In</title>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+    <!-- Updated Firebase compat scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
     <h1>Jiad Motors Service Check-In</h1>
@@ -14,43 +15,43 @@
     <button onclick="addToQueue()">Check-In</button>
 
     <script>
-        // ✅ Firebase Config
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDoT3a-z5rABA8cPaNHRCyc_i9YAArKHqk",
             authDomain: "jiadmotors-dammam-queue-system.firebaseapp.com",
             projectId: "jiadmotors-dammam-queue-system",
-            storageBucket: "jiadmotors-dammam-queue-system.firebasestorage.app",
+            storageBucket: "jiadmotors-dammam-queue-system.appspot.com",
             messagingSenderId: "89411831830",
             appId: "1:89411831830:web:d53d665a0ec0c6c74d4d37",
             measurementId: "G-TPT34R9HC5"
         };
 
-        // ✅ Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
         function addToQueue() {
-            console.log("Check-In button clicked!"); // Debugging log
-            const name = document.getElementById("name").value.trim();
-            const phone = document.getElementById("phone").value.trim();
+            const name = document.getElementById('name').value.trim();
+            const phone = document.getElementById('phone').value.trim();
 
             if (!name || !phone) {
-                alert("Please enter your name and phone number.");
+                alert('Please enter your name and phone number.');
                 return;
             }
 
-            db.collection("queue").add({
+            db.collection('queue').add({
                 name: name,
                 phone: phone,
-                time: new Date().toLocaleTimeString()
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
             })
             .then(() => {
-                alert("You have been added to the queue!");
-                document.getElementById("name").value = "";
-                document.getElementById("phone").value = "";
+                alert('You have been added to the queue!');
+                document.getElementById('name').value = '';
+                document.getElementById('phone').value = '';
             })
-            .catch(error => {
-                console.error("Error adding to queue: ", error);
+            .catch((error) => {
+                console.error('Error adding document: ', error);
+                alert('An error occurred. Please try again.');
             });
         }
     </script>
