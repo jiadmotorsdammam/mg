@@ -31,12 +31,15 @@
             text-align: center;
         }
         button {
-            margin-top: 20px;
-            padding: 10px;
+            margin-top: 5px;
+            padding: 5px 10px;
             background-color: black;
             color: white;
             border: none;
             cursor: pointer;
+        }
+        .hidden {
+            display: none;
         }
     </style>
 </head>
@@ -48,59 +51,67 @@
                 <tr>
                     <th>#</th>
                     <th>Name</th>
+                    <th>Phone</th>
                     <th>Time</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody id="queueTable"></tbody>
         </table>
-        <button onclick="clearQueue()">Clear Queue</button>
     </div>
 
-    <script>
-        function loadQueue() {
-            const queue = JSON.parse(localStorage.getItem("queue")) || [];
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDoT3a-z5rABA8cPaNHRCyc_i9YAArKHqk",
+            authDomain: "jiadmotors-dammam-queue-system.firebaseapp.com",
+            projectId: "jiadmotors-dammam-queue-system",
+            storageBucket: "jiadmotors-dammam-queue-system.firebasestorage.app",
+            messagingSenderId: "89411831830",
+            appId: "1:89411831830:web:d53d665a0ec0c6c74d4d37",
+            measurementId: "G-TPT34R9HC5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function loadQueue() {
             const queueTable = document.getElementById("queueTable");
             queueTable.innerHTML = "";
-            queue.forEach((customer, index) => {
+
+            const querySnapshot = await getDocs(collection(db, "queue"));
+            let count = 1;
+            querySnapshot.forEach((doc) => {
+                const customer = doc.data();
                 queueTable.innerHTML += `
                     <tr>
-                        <td>${index + 1}</td>
+                        <td>${count++}</td>
                         <td>${customer.name}</td>
-                        <td>${customer.time}</td>
-                        <td><button onclick="removeFromQueue(${index})">Done</button></td>
+                        <td>
+                            <button onclick="togglePhone('${doc.id}')">Show</button>
+                            <span id="phone-${doc.id}" class="hidden">${customer.phone}</span>
+                        </td>
+                        <td>${new Date(customer.time).toLocaleTimeString()}</td>
+                        <td><button onclick="removeFromQueue('${doc.id}')">Done</button></td>
                     </tr>
                 `;
             });
         }
 
-        function removeFromQueue(index) {
-            let queue = JSON.parse(localStorage.getItem("queue")) || [];
-            queue.splice(index, 1);
-            localStorage.setItem("queue", JSON.stringify(queue));
-            loadQueue();
-            // Dispatch an event to notify about the queue update
-            window.dispatchEvent(new Event('queueUpdated'));
+        function togglePhone(id) {
+            const phoneSpan = document.getElementById(`phone-${id}`);
+            phoneSpan.classList.toggle("hidden");
         }
 
-        function clearQueue() {
-            localStorage.removeItem("queue");
+        async function removeFromQueue(id) {
+            await deleteDoc(doc(db, "queue", id));
             loadQueue();
-            // Dispatch an event to notify about the queue update
-            window.dispatchEvent(new Event('queueUpdated'));
         }
 
-        // Listen for queue updates
-        window.addEventListener('storage', function(e) {
-            if (e.key === 'queue') {
-                loadQueue();
-            }
-        });
-
-        // Also perform periodic checks every 30 seconds
         setInterval(loadQueue, 30000);
-
-        // Initial load
         loadQueue();
     </script>
 </body>
