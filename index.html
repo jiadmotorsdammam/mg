@@ -59,7 +59,7 @@
         <h1>Jiad Motors Service Check-In</h1>
         <input type="text" id="name" placeholder="Full Name" required>
         <input type="tel" id="phone" placeholder="Phone Number" required>
-        <button onclick="addToQueue()">Check-In</button>
+        <button id="checkInButton">Check-In</button>
     </div>
 
     <!-- Firebase SDK -->
@@ -80,23 +80,30 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        async function addToQueue() {
-            const name = document.getElementById("name").value;
-            const phone = document.getElementById("phone").value;
+        document.getElementById("checkInButton").addEventListener("click", async () => {
+            const name = document.getElementById("name").value.trim();
+            const phone = document.getElementById("phone").value.trim();
+
             if (!name || !phone) {
                 alert("Please enter your name and phone number.");
                 return;
             }
 
             try {
-                await addDoc(collection(db, "queue"), { name, phone, time: new Date().toISOString() });
+                const docRef = await addDoc(collection(db, "queue"), {
+                    name: name,
+                    phone: phone,
+                    time: new Date().toISOString()
+                });
+                console.log("Added to queue with ID: ", docRef.id);
                 alert("You have been added to the queue!");
                 document.getElementById("name").value = "";
                 document.getElementById("phone").value = "";
             } catch (error) {
-                alert("Error adding to queue: " + error.message);
+                console.error("Error adding document: ", error);
+                alert("Error adding to queue. Check console.");
             }
-        }
+        });
     </script>
 </body>
 </html>
