@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Queue Display - Jiad Motors</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -31,15 +33,12 @@
             text-align: center;
         }
         button {
-            margin-top: 5px;
-            padding: 5px 10px;
+            margin-top: 20px;
+            padding: 10px;
             background-color: black;
             color: white;
             border: none;
             cursor: pointer;
-        }
-        .hidden {
-            display: none;
         }
     </style>
 </head>
@@ -51,8 +50,8 @@
                 <tr>
                     <th>#</th>
                     <th>Name</th>
-                    <th>Phone</th>
                     <th>Time</th>
+                    <th>Phone</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -60,11 +59,8 @@
         </table>
     </div>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
-
+    <script>
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDoT3a-z5rABA8cPaNHRCyc_i9YAArKHqk",
             authDomain: "jiadmotors-dammam-queue-system.firebaseapp.com",
@@ -75,47 +71,43 @@
             measurementId: "G-TPT34R9HC5"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-        async function loadQueue() {
-            console.log("Loading queue...");
-            const queueTable = document.getElementById("queueTable");
-            queueTable.innerHTML = "";
-
-            try {
-                const querySnapshot = await getDocs(collection(db, "queue"));
-                let count = 1;
-                querySnapshot.forEach((doc) => {
+        function loadQueue() {
+            db.collection("queue").onSnapshot(snapshot => {
+                const queueTable = document.getElementById("queueTable");
+                queueTable.innerHTML = "";
+                snapshot.forEach((doc, index) => {
                     const customer = doc.data();
                     queueTable.innerHTML += `
                         <tr>
-                            <td>${count++}</td>
+                            <td>${index + 1}</td>
                             <td>${customer.name}</td>
+                            <td>${customer.time}</td>
                             <td>
-                                <button onclick="togglePhone('${doc.id}')">Show</button>
-                                <span id="phone-${doc.id}" class="hidden">${customer.phone}</span>
+                                <button onclick="togglePhone(this)" data-phone="${customer.phone}">Show</button>
                             </td>
-                            <td>${new Date(customer.time).toLocaleTimeString()}</td>
                             <td><button onclick="removeFromQueue('${doc.id}')">Done</button></td>
                         </tr>
                     `;
                 });
-            } catch (error) {
-                console.error("Error loading queue: ", error);
+            });
+        }
+
+        function togglePhone(button) {
+            if (button.innerText === "Show") {
+                button.innerText = button.getAttribute("data-phone");
+            } else {
+                button.innerText = "Show";
             }
         }
 
-        function togglePhone(id) {
-            document.getElementById(`phone-${id}`).classList.toggle("hidden");
+        function removeFromQueue(id) {
+            db.collection("queue").doc(id).delete();
         }
 
-        async function removeFromQueue(id) {
-            await deleteDoc(doc(db, "queue", id));
-            loadQueue();
-        }
-
-        setInterval(loadQueue, 30000);
         loadQueue();
     </script>
 </body>
