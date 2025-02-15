@@ -4,41 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Queue Display - Jiad Motors</title>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+    <!-- Updated Firebase compat scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
             background-color: #d40000;
             color: white;
+            margin: 0;
+            padding: 20px;
         }
         .container {
-            max-width: 600px;
-            margin: auto;
+            max-width: 800px;
+            margin: 20px auto;
             background: white;
             padding: 20px;
             border-radius: 10px;
-            color: black;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            color: #333;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-        }
-        table, th, td {
-            border: 1px solid black;
+            margin-top: 20px;
         }
         th, td {
-            padding: 10px;
-            text-align: center;
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
         }
         button {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: black;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .show-phone {
+            background-color: #007bff;
             color: white;
             border: none;
-            cursor: pointer;
+        }
+        .done-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
         }
     </style>
 </head>
@@ -50,7 +67,7 @@
                 <tr>
                     <th>#</th>
                     <th>Name</th>
-                    <th>Time</th>
+                    <th>Check-In Time</th>
                     <th>Phone</th>
                     <th>Action</th>
                 </tr>
@@ -65,50 +82,19 @@
             apiKey: "AIzaSyDoT3a-z5rABA8cPaNHRCyc_i9YAArKHqk",
             authDomain: "jiadmotors-dammam-queue-system.firebaseapp.com",
             projectId: "jiadmotors-dammam-queue-system",
-            storageBucket: "jiadmotors-dammam-queue-system.firebasestorage.app",
+            storageBucket: "jiadmotors-dammam-queue-system.appspot.com",
             messagingSenderId: "89411831830",
             appId: "1:89411831830:web:d53d665a0ec0c6c74d4d37",
             measurementId: "G-TPT34R9HC5"
         };
 
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
+        const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        // Real-time listener for queue updates
         function loadQueue() {
-            db.collection("queue").onSnapshot(snapshot => {
-                const queueTable = document.getElementById("queueTable");
-                queueTable.innerHTML = "";
-                snapshot.forEach((doc, index) => {
-                    const customer = doc.data();
-                    queueTable.innerHTML += `
-                        <tr>
-                            <td>${index + 1}</td>
-                            <td>${customer.name}</td>
-                            <td>${customer.time}</td>
-                            <td>
-                                <button onclick="togglePhone(this)" data-phone="${customer.phone}">Show</button>
-                            </td>
-                            <td><button onclick="removeFromQueue('${doc.id}')">Done</button></td>
-                        </tr>
-                    `;
-                });
-            });
-        }
-
-        function togglePhone(button) {
-            if (button.innerText === "Show") {
-                button.innerText = button.getAttribute("data-phone");
-            } else {
-                button.innerText = "Show";
-            }
-        }
-
-        function removeFromQueue(id) {
-            db.collection("queue").doc(id).delete();
-        }
-
-        loadQueue();
-    </script>
-</body>
-</html>
+            db.collection('queue')
+                .orderBy('timestamp', 'asc')
+                .onSnapshot(snapshot => {
+                    const queueTable = document.getElementById('queueTable
